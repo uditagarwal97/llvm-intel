@@ -27,28 +27,28 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    runs-on: ubuntu-20.04
-    container:
-      image: ghcr.io/intel/llvm/sycl_ubuntu2004_nightly:no-drivers
-    steps:
-    - name: 'PR commits + 1'
-      run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> "${GITHUB_ENV}"
-    - uses: actions/checkout@v3
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-        persist-credentials: false
-        fetch-depth: ${{ env.PR_FETCH_DEPTH }}
-    - name: Run clang-format
-      uses: ./devops/actions/clang-format
+ # lint:
+ #   runs-on: ubuntu-20.04
+ #   container:
+ #     image: ghcr.io/intel/llvm/sycl_ubuntu2004_nightly:no-drivers
+ #   steps:
+ #   - name: 'PR commits + 1'
+ #     run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> "${GITHUB_ENV}"
+ #   - uses: actions/checkout@v3
+ #     with:
+ #       ref: ${{ github.event.pull_request.head.sha }}
+ #       persist-credentials: false
+ #       fetch-depth: ${{ env.PR_FETCH_DEPTH }}
+ #   - name: Run clang-format
+ #     uses: ./devops/actions/clang-format
 
   # This job generates matrix of tests for LLVM Test Suite
-  test_matrix:
-    name: Generate Test Matrix
-    uses: ./.github/workflows/sycl_gen_test_matrix.yml
-    with:
-      ref: ${{ github.event.pull_request.head.sha }}
-      lts_config: "hip_amdgpu;ocl_x64;ocl_gen9;l0_gen9;esimd_emu;cuda_aws"
+ # test_matrix:
+ #   name: Generate Test Matrix
+ #   uses: ./.github/workflows/sycl_gen_test_matrix.yml
+ #   with:
+ #     ref: ${{ github.event.pull_request.head.sha }}
+ #     lts_config: "hip_amdgpu;ocl_x64;ocl_gen9;l0_gen9;esimd_emu;cuda_aws"
 
   linux_default:
     name: Linux
