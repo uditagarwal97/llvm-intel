@@ -52,6 +52,7 @@ jobs:
 
   linux_default:
     name: Linux
+    runs-on: ubuntu-20.04
     # Only build and test patches, that have passed all linter checks, because
     # the next commit is likely to be a follow-up on that job.
     # needs: [lint, test_matrix]
