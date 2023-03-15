@@ -55,6 +55,7 @@ runs:
     shell: cmd
     run: |
       set PATH=%GITHUB_WORKSPACE%\install\bin;%PATH%
+      doskey true=cd . # Setting an alias for 'true'.
       set LIT_OPTS=-v --no-progress-bar --show-unsupported --max-time 3600 --time-tests -o results_${{ inputs.results_name_suffix }}.json
       echo ::group::sycl-ls --verbose
       sycl-ls --verbose
