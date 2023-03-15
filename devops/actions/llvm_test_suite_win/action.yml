@@ -30,8 +30,9 @@ runs:
     uses: actions/checkout@v3
     with:
       path: llvm_test_suite
-      repository: 'intel/llvm-test-suite'
-      ref: ${{ inputs.test_ref }}
+      repository: 'uditagarwal97/llvm-test-suite-intel'
+      ref: 'LitCI'
+#      ref: ${{ inputs.test_ref }}
   - name: Download compiler toolchain
     uses: actions/download-artifact@v3
     with:
