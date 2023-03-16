@@ -1,6 +1,35 @@
 name: SYCL Windows Test
 
 on:
+  workflow_dispatch:
+    inputs:
+      build_cache_suffix:
+        type: string
+        required: false
+        default: "default"
+      build_ref:
+        type: string
+        required: false
+      lts_matrix:
+        type: string
+        required: false
+        default: "[]"
+      lts_aws_matrix:
+        type: string
+        required: false
+        default: "[]"
+      lts_cmake_extra_args:
+        type: string
+        required: false
+        default: ""
+      lts_ref:
+        type: string
+        required: false
+        default: 'intel'
+      max_parallel:
+        type: number
+        required: false
+        default: 4
   workflow_call:
     inputs:
       build_cache_suffix:
