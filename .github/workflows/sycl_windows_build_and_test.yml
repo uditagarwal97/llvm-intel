@@ -95,7 +95,7 @@ jobs:
           --ci-defaults ^
           --cmake-opt="-DCMAKE_C_COMPILER=cl" ^
           --cmake-opt="-DCMAKE_CXX_COMPILER=cl" ^
-          --cmake-opt="-DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\install"
+          --cmake-opt="-DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\install" ^
           --cmake-opt="-DCMAKE_CXX_COMPILER_LAUNCHER=sccache" ^
           --cmake-opt="-DCMAKE_C_COMPILER_LAUNCHER=sccache"
     - name: Build
