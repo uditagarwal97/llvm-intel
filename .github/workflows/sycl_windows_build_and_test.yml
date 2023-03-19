@@ -144,8 +144,14 @@ jobs:
       shell: bash
       run: |
         cmake --build build --target deploy-sycl-toolchain
+    - name: LLVM Test Suite
+      shell: bash
+      run: |
+        echo "%PATH%"
+        mkdir e2eTests
         dir
-        echo %PATH%
+        cmake --build build --target check-sycl-e2e
+        cmake --build e2eTests --target check-sycl-e2e
 #    - name: Upload toolchain
 #      uses: actions/upload-artifact@v3
 #      with:
