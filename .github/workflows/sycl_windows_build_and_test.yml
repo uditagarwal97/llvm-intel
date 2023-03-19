@@ -103,7 +103,7 @@ jobs:
       id: build
       # TODO replace utility installation with a single CMake target
       run: |
-        #cmake --build build --target deploy-sycl-toolchain
+        cmake --build build --target deploy-sycl-toolchain
         #cmake --build build --target utils/FileCheck/install
         #cmake --build build --target utils/count/install
         #cmake --build build --target utils/not/install
@@ -115,7 +115,7 @@ jobs:
         #cmake --build build --target install-llvm-cov
         #cmake --build build --target install-llvm-profdata
         #cmake --build build --target install-compiler-rt
-        cmake -GNinja -B.\build-e2e -S.\src\sycl\test-e2e -DSYCL_TEST_E2E_TARGETS="${{ matrix.check_sycl_all }}" -DCMAKE_CXX_COMPILERR="clang++" -DLLVM_LIT=".\src\llvm\utils\lit\lit.py" ${{ matrix.cmake_args }} ${{ inputs.lts_cmake_extra_args }}
+        cmake -GNinja -B.\build-e2e -S.\src\sycl\test-e2e -DSYCL_TEST_E2E_TARGETS="${{ matrix.check_sycl_all }}" -DCMAKE_CXX_COMPILERR=".\build\bin\clang++" -DLLVM_LIT=".\src\llvm\utils\lit\lit.py" ${{ matrix.cmake_args }} ${{ inputs.lts_cmake_extra_args }}
         sccache --show-stats
 #    - name: check-llvm
 #      shell: bash
@@ -149,9 +149,6 @@ jobs:
     - name: LLVM Test Suite
       shell: bash
       run: |
-        set
-        mkdir e2eTests
-        dir
         cmake --build e2eTests --target check-sycl-e2e
 #    - name: Upload toolchain
 #      uses: actions/upload-artifact@v3
