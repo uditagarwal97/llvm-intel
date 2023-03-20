@@ -120,7 +120,7 @@ jobs:
         cmake --build build --target install-llvm-profdata
         cmake --build build --target install-compiler-rt
         set PATH=%CD%\build\bin;%PATH%
-        cmake -GNinja -B build-e2e -S.\src\sycl\test-e2e -DSYCL_TEST_E2E_TARGETS="${{ matrix.check_sycl_all }}" -DCMAKE_CXX_COMPILER="clang++" -DLLVM_LIT=".\src\llvm\utils\lit\lit.py" ${{ matrix.cmake_args }} ${{ inputs.lts_cmake_extra_args }}
+        cmake -GNinja -B build-e2e -S.\src\sycl\test-e2e -DSYCL_TEST_E2E_TARGETS="${{ matrix.check_sycl_all }}" -DCMAKE_CXX_COMPILER="clang++" -DLLVM_LIT="..\src\llvm\utils\lit\lit.py" ${{ matrix.cmake_args }} ${{ inputs.lts_cmake_extra_args }}
         sccache --show-stats
 #    - name: check-llvm
 #      shell: bash
