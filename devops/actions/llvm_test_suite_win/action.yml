@@ -26,13 +26,11 @@ runs:
   using: "composite"
   steps:
   - name: Checkout LLVM Test Suite
-# TODO: use cached_checkout
+# TODO: use build ref & use cached checkout
     uses: actions/checkout@v3
     with:
-      path: llvm_test_suite
-      repository: 'uditagarwal97/llvm-test-suite-intel'
-      ref: 'LitCI'
-#      ref: ${{ inputs.test_ref }}
+      path: src
+      fetch-depth: 1
   - name: Download compiler toolchain
     uses: actions/download-artifact@v3
     with:
@@ -52,25 +50,25 @@ runs:
       dir "%GITHUB_WORKSPACE%\install\bin"
       where env
       echo %PATH%
-      mkdir build
+      mkdir build-e2e
       set PATH=%GITHUB_WORKSPACE%\install\bin;%PATH%
-      cmake -GNinja -B.\build -S.\llvm_test_suite -DTEST_SUITE_SUBDIRS=SYCL -DCHECK_SYCL_ALL="${{ inputs.check_sycl_all }}" -DCMAKE_CXX_COMPILER="clang++" -DTEST_SUITE_LIT="%GITHUB_WORKSPACE%\lit\lit.py" ${{ inputs.cmake_args }}
+      cmake -GNinja -B build-e2e -S.\src\sycl\test-e2e -DSYCL_TEST_E2E_TARGETS="${{ inputs.check_sycl_all }}" -DCMAKE_CXX_COMPILER="clang++" -DLLVM_LIT="..\src\llvm\utils\lit\lit.py" ${{ inputs.cmake_args }}
+      #cmake -GNinja -B.\build -S.\llvm_test_suite -DTEST_SUITE_SUBDIRS=SYCL -DCHECK_SYCL_ALL="${{ inputs.check_sycl_all }}" -DCMAKE_CXX_COMPILER="clang++" -DTEST_SUITE_LIT="%GITHUB_WORKSPACE%\lit\lit.py" ${{ inputs.cmake_args }}
       echo ::endgroup::
   - name: Run testing
-    shell: cmd
+    shell: bash
     run: |
-      set PATH=%GITHUB_WORKSPACE%\install\bin;%PATH%
-      set LIT_OPTS=-v --no-progress-bar --show-unsupported --max-time 3600 --time-tests -o results_${{ inputs.results_name_suffix }}.json
-      echo ::group::sycl-ls --verbose
-      sycl-ls --verbose
-      echo ::endgroup::
-      echo ::group::SYCL_PI_TRACE=-1 sycl-ls
-      set SYCL_PI_TRACE=-1
-      sycl-ls
-      set SYCL_PI_TRACE=
-      echo ::endgroup::
-      cd build
-      ninja check-sycl-all
+      export PATH=$GITHUB_WORKSPACE\install\bin;$PATH
+      #set LIT_OPTS=-v --no-progress-bar --show-unsupported --max-time 3600 --time-tests -o results_${{ inputs.results_name_suffix }}.json
+      #echo ::group::sycl-ls --verbose
+      #sycl-ls --verbose
+      #echo ::endgroup::
+      #echo ::group::SYCL_PI_TRACE=-1 sycl-ls
+      #set SYCL_PI_TRACE=-1
+      #sycl-ls
+      #set SYCL_PI_TRACE=
+      #echo ::endgroup::
+      cmake --build build-e2e --target check-sycl-e2e
   - name: Upload test results
     uses: actions/upload-artifact@v1
     if: always()
@@ -83,5 +81,5 @@ runs:
     run: |
       rmdir /q /s install
       rmdir /q /s lit
-      rmdir /q /s build
-      rmdir /q /s llvm_test_suite
+      rmdir /q /s build-e2e
+      rmdir /q /s src
