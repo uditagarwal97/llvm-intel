@@ -148,19 +148,23 @@ jobs:
 #      run: |
 #        cmake --build build --target check-xptifw
     - name: Install
+      if: always() # [Udit] Remove this once LIT passes.
       shell: bash
       run: |
         cmake --build build --target deploy-sycl-toolchain
     - name: LLVM Test Suite
+      if: always() # [Udit] Remove this once LIT passes.
       shell: bash
       run: |
         cmake --build build-e2e --target check-sycl-e2e
     - name: Upload toolchain
+      if: always() # [Udit] Remove this once LIT passes.
       uses: actions/upload-artifact@v3
       with:
         name: sycl_windows_default
         path: install
     - name: Upload LIT
+      if: always() # [Udit] Remove this once LIT passes.
       uses: actions/upload-artifact@v3
       with:
         name: sycl_windows_lit
@@ -169,7 +173,8 @@ jobs:
   llvm_test_suite:
     needs: build
     #if: ${{ !failure() && inputs.lts_matrix != '[]' }}
-    if: ${{ inputs.lts_matrix != '[]' }}
+    if: always() # [Udit] Remove this once LIT passes.
+    #if: ${{ inputs.lts_matrix != '[]' }}
     strategy:
       fail-fast: false
       max-parallel: ${{ inputs.max_parallel }}
