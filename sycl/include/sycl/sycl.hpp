@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include <sycl/accessor.hpp>
 #include <sycl/aspects.hpp>
 #include <sycl/atomic.hpp>
