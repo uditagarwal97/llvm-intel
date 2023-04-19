@@ -52,7 +52,7 @@ module.exports = ({core, process}) => {
           }
           if (v["runs-on"].includes("Windows"))
             enabledLTSWnConfigs.push(v);
-          else if (v["runs-on"].includes("Linux"))
+          else if (v["runs-on"].includes("Linux") || v["runs-on"].includes("aws-cuda")))
             enabledLTSLxConfigs.push(v);
           else
             console.error("runs-on OS is not recognized");
