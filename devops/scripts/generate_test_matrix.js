@@ -54,6 +54,8 @@ module.exports = ({core, process}) => {
           // Check for CUDA machines. If available, add them to enabledLTSLxConfigs.
           var cudaRegex = /aws-cuda*/g ;
           var atLeastOneMatches = v["runs-on"].some(e => cudaRegex.test(e));
+          console.log(v["runs-on"])
+          console.log(atLeastOneMatches)
 
           if (v["runs-on"].includes("Windows"))
             enabledLTSWnConfigs.push(v);
