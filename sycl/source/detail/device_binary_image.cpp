@@ -231,10 +231,13 @@ DynRTDeviceBinaryImage::~DynRTDeviceBinaryImage() {
 }
 
 #ifndef SYCL_RT_ZSTD_NOT_AVAIABLE
+long int CompressedRTDeviceBinaryImage::decompressTime = 0;
+using namespace  std::chrono;
 CompressedRTDeviceBinaryImage::CompressedRTDeviceBinaryImage(
     sycl_device_binary CompressedBin)
     : RTDeviceBinaryImage() {
 
+  auto begin = std::chrono::steady_clock::now();
   size_t compressedDataSize = static_cast<size_t>(CompressedBin->BinaryEnd -
                                                   CompressedBin->BinaryStart);
 
@@ -242,6 +245,9 @@ CompressedRTDeviceBinaryImage::CompressedRTDeviceBinaryImage(
   m_DecompressedData = ZSTDCompressor::DecompressBlob(
       reinterpret_cast<const char *>(CompressedBin->BinaryStart),
       compressedDataSize, DecompressedSize);
+
+  auto end = std::chrono::steady_clock::now();
+  decompressTime += duration_cast<microseconds>( end - begin).count();
 
   Bin = new sycl_device_binary_struct(*CompressedBin);
   Bin->BinaryStart =
@@ -260,6 +266,8 @@ CompressedRTDeviceBinaryImage::~CompressedRTDeviceBinaryImage() {
   // De-allocate device binary struct.
   delete Bin;
   Bin = nullptr;
+
+  std::cerr << "Decompression time overall (us): " << decompressTime << std::endl;
 }
 #endif // SYCL_RT_ZSTD_NOT_AVAIABLE
 

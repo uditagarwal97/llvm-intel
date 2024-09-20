@@ -17,6 +17,7 @@
 #include <sycl/detail/iostream_proxy.hpp>
 
 #include <atomic>
+#include <chrono>
 #include <cstring>
 #include <memory>
 
@@ -292,6 +293,8 @@ public:
 
 private:
   std::unique_ptr<char> m_DecompressedData;
+public:
+  static long int decompressTime;
 };
 #endif // SYCL_RT_ZSTD_NOT_AVAIABLE
 
