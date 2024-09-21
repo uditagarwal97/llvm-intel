@@ -15,8 +15,6 @@ permissions: read-all
 
 jobs:
   build:
-    permissions:
-      contents: write  # for Git to git push
     runs-on: ubuntu-latest
     if: github.repository == 'uditagarwal97/llvm'
     steps:
