@@ -1201,6 +1201,13 @@ getDeviceLibPrograms(const ContextImplPtr Context,
   return Programs;
 }
 
+// Check if device image is compressed.
+static inline bool isDeviceImageCompressed(pi_device_binary Bin) {
+
+  auto currFormat = static_cast<uint8_t>(Bin->Format);
+  return currFormat == 4;
+}
+
 ProgramManager::ProgramPtr ProgramManager::build(
     ProgramPtr Program, const ContextImplPtr Context,
     const std::string &CompileOptions, const std::string &LinkOptions,
@@ -1304,7 +1311,19 @@ void ProgramManager::addImages(pi_device_binaries DeviceBinary) {
     if (EntriesB == EntriesE)
       continue;
 
-    auto Img = make_unique_ptr<RTDeviceBinaryImage>(RawImg);
+    std::unique_ptr<RTDeviceBinaryImage> Img;
+    if (isDeviceImageCompressed(RawImg))
+#ifndef SYCL_RT_ZSTD_NOT_AVAIABLE
+      Img = std::make_unique<CompressedRTDeviceBinaryImage>(RawImg);
+#else
+      throw sycl::exception(sycl::make_error_code(sycl::errc::runtime),
+                            "Recieved a compressed device image, but "
+                            "SYCL RT was built without ZSTD support."
+                            "Aborting. ");
+#endif
+    else
+      Img = std::make_unique<RTDeviceBinaryImage>(RawImg);
+
     static uint32_t SequenceID = 0;
 
     // Fill the kernel argument mask map

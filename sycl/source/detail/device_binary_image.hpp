@@ -258,6 +258,25 @@ protected:
   std::unique_ptr<char[]> Data;
 };
 
+#ifndef SYCL_RT_ZSTD_NOT_AVAIABLE
+// Compressed device binary image. It decompresses the binary image on
+// construction and stores the decompressed data as RTDeviceBinaryImage.
+// Also, frees the decompressed data in destructor.
+class CompressedRTDeviceBinaryImage : public RTDeviceBinaryImage {
+public:
+  CompressedRTDeviceBinaryImage(pi_device_binary Bin);
+  ~CompressedRTDeviceBinaryImage() override;
+
+  void print() const override {
+    RTDeviceBinaryImage::print();
+    std::cerr << "    COMPRESSED\n";
+  }
+
+private:
+  std::unique_ptr<char> m_DecompressedData;
+};
+#endif // SYCL_RT_ZSTD_NOT_AVAIABLE
+
 } // namespace detail
 } // namespace _V1
 } // namespace sycl

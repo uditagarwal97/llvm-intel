@@ -6,6 +6,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+// For device image compression.
+#include <detail/compression.hpp>
+
 #include <detail/device_binary_image.hpp>
 #include <sycl/detail/pi.hpp>
 
@@ -208,6 +211,39 @@ DynRTDeviceBinaryImage::~DynRTDeviceBinaryImage() {
   delete Bin;
   Bin = nullptr;
 }
+
+#ifndef SYCL_RT_ZSTD_NOT_AVAIABLE
+CompressedRTDeviceBinaryImage::CompressedRTDeviceBinaryImage(
+    pi_device_binary CompressedBin)
+    : RTDeviceBinaryImage() {
+
+  size_t compressedDataSize = static_cast<size_t>(CompressedBin->BinaryEnd -
+                                                  CompressedBin->BinaryStart);
+
+  size_t DecompressedSize = 0;
+  m_DecompressedData = ZSTDCompressor::DecompressBlob(
+      reinterpret_cast<const char *>(CompressedBin->BinaryStart),
+      compressedDataSize, DecompressedSize);
+
+  Bin = new pi_device_binary_struct(*CompressedBin);
+  Bin->BinaryStart =
+      reinterpret_cast<const unsigned char *>(m_DecompressedData.get());
+  Bin->BinaryEnd = Bin->BinaryStart + DecompressedSize;
+
+  // Set the new format to none and let RT determine the format.
+  // TODO: Add support for automatically detecting compressed
+  // binary format.
+  Bin->Format = 0;
+
+  init(Bin);
+}
+
+CompressedRTDeviceBinaryImage::~CompressedRTDeviceBinaryImage() {
+  // De-allocate device binary struct.
+  delete Bin;
+  Bin = nullptr;
+}
+#endif // SYCL_RT_ZSTD_NOT_AVAIABLE
 
 } // namespace detail
 } // namespace _V1

@@ -9587,6 +9587,13 @@ void OffloadWrapper::ConstructJob(Compilation &C, const JobAction &JA,
     HostTripleOpt += getToolChain().getAuxTriple()->str();
     WrapperArgs.push_back(C.getArgs().MakeArgString(HostTripleOpt));
 
+    // Validate and propogate CLI options related to device image compression.
+    // -offload-compress
+    if (C.getInputArgs().getLastArg(options::OPT_offload_compress)) {
+      WrapperArgs.push_back(
+          C.getArgs().MakeArgString(Twine("-offload-compress")));
+    }
+
     llvm::Triple TT = getToolChain().getTriple();
     SmallString<128> TargetTripleOpt = TT.getArchName();
     // When wrapping an FPGA device binary, we need to be sure to apply the

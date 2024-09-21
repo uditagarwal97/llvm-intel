@@ -25,6 +25,13 @@ function(add_sycl_rt_library LIB_NAME LIB_OBJ_NAME)
               $<TARGET_OBJECTS:${LIB_OBJ_NAME}>
               ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
+  if (NOT LLVM_ENABLE_ZSTD)
+    target_compile_definitions(${LIB_OBJ_NAME} PRIVATE SYCL_RT_ZSTD_NOT_AVAIABLE)
+  else()
+    target_link_libraries(${LIB_NAME} PRIVATE ${zstd_STATIC_LIBRARY})
+    target_include_directories(${LIB_OBJ_NAME} PRIVATE ${zstd_INCLUDE_DIR})
+  endif()
+
   # Unlike for sycl library, for LLVMSupport we have only one version for a given build,
   # so, we link LLVMSupport lib to matching sycl version only.
   if (SYCL_ENABLE_STACK_PRINTING)
