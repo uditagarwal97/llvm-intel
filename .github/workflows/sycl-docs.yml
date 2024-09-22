@@ -36,7 +36,8 @@ jobs:
         -s $GITHUB_WORKSPACE/repo -o $GITHUB_WORKSPACE/build -t Release --docs
         cmake --build . --target docs-sycl-html
         cmake --build . --target docs-clang-html
-        cd $GITHUB_WORKSPACE/docs
+        mkdir $GITHUB_WORKSPACE/install_docs
+        cd $GITHUB_WORKSPACE/install_docs
         yes | \cp -rf $GITHUB_WORKSPACE/build/tools/sycl/doc/html/* .
         mv $GITHUB_WORKSPACE/build/tools/clang/docs/html clang/
         touch .nojekyll
@@ -44,7 +45,7 @@ jobs:
       uses: actions/upload-pages-artifact@v3
       with:
         # Upload entire repository
-        path: $GITHUB_WORKSPACE/docs
+        path: $GITHUB_WORKSPACE/install_docs
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
