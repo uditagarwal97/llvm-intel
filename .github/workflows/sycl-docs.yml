@@ -41,11 +41,13 @@ jobs:
         yes | \cp -rf $GITHUB_WORKSPACE/build/tools/sycl/doc/html/* .
         mv $GITHUB_WORKSPACE/build/tools/clang/docs/html clang/
         touch .nojekyll
+        ls
+        pwd
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         # Upload entire repository
-        path: $GITHUB_WORKSPACE/install_docs
+        path: ./install_docs
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
