@@ -11,7 +11,10 @@ on:
     - 'clang/docs/**'
     - 'sycl/doc/**'
 
-permissions: read-all
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -33,6 +36,19 @@ jobs:
         -s $GITHUB_WORKSPACE/repo -o $GITHUB_WORKSPACE/build -t Release --docs
         cmake --build . --target docs-sycl-html
         cmake --build . --target docs-clang-html
+        mkdir $GITHUB_WORKSPACE/install_docs
+        cd $GITHUB_WORKSPACE/install_docs
+        yes | \cp -rf $GITHUB_WORKSPACE/build/tools/sycl/doc/html/* .
+        mv $GITHUB_WORKSPACE/build/tools/clang/docs/html clang/
+        touch .nojekyll
         ls
         pwd
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        # Upload entire repository
+        path: ./install_docs
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
 
