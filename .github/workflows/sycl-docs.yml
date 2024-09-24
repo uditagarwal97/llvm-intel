@@ -1,4 +1,4 @@
-name: Generate Doxygen documentation
+name: Generate documentation
 
 on:
   schedule:
@@ -10,13 +10,21 @@ on:
     - '.github/workflows/sycl-docs.yml'
     - 'clang/docs/**'
     - 'sycl/doc/**'
+  push:
+    branches:
+    - sycl
+    paths:
+    - '.github/workflows/sycl-docs.yml'
+    - 'clang/docs/**'
+    - 'sycl/doc/**'
 
-permissions: read-all
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
-    permissions:
-      contents: write  # for Git to git push
     runs-on: ubuntu-latest
     if: github.repository == 'uditagarwal97/llvm'
     steps:
@@ -42,10 +50,12 @@ jobs:
         cp -rf $GITHUB_WORKSPACE/build/tools/sycl/doc/html/* .
         mv $GITHUB_WORKSPACE/build/tools/clang/docs/html clang/
         touch .nojekyll
+    # Upload the generated docs as an artifact and deploy to GitHub Pages.
     - name: Upload artifact
+      if: ${{ github.event_name == 'push' }}
       uses: actions/upload-pages-artifact@v3
       with:
         path: ./install_docs
     - name: Deploy to GitHub Pages
-      id: deployment
+      if: ${{ github.event_name == 'push' }}
       uses: actions/deploy-pages@v4
