@@ -15,7 +15,6 @@ Using oneAPI DPC++ for Application Development
    Extensions <https://github.com/intel/llvm/tree/sycl/sycl/doc/extensions>
    syclcompat/README.md
    FAQ
-   User API Reference <https://intel.github.io/llvm-docs/doxygen/group__sycl__api.html>
    EnvironmentVariables
    MultiTileCardWithLevelZero
    syclgraph/SYCLGraphUsageGuide
@@ -26,9 +25,7 @@ Design Documents for the oneAPI DPC++ Compiler
 .. toctree::
    :maxdepth: 1
 
-   API Reference <https://intel.github.io/llvm-docs/doxygen>
-   Clang Documentation <clang>
-   Clang API Reference <https://intel.github.io/llvm-docs/clang_doxygen>
+   Clang Documentation <https://uditagarwal97.github.io/llvm/clang>
    design/CompilerAndRuntimeDesign
    design/KernelParameterPassing
    design/PluginInterface
