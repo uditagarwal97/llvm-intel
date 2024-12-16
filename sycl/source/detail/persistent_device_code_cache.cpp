@@ -16,6 +16,17 @@
 #include <fstream>
 #include <optional>
 
+// For GCC versions less than 8, use experimental/filesystem.
+#if defined(__has_include) && __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif defined(__has_include) && __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "OSUtils requires C++ filesystem support"
+#endif
+
 #include <time.h>
 
 #if defined(__SYCL_RT_OS_POSIX_SUPPORT)
@@ -226,6 +237,33 @@ void PersistentDeviceCodeCache::repopulateCacheSizeFile(
   }
 }
 
+std::vector<std::pair<uint64_t, std::string>>
+getFilesWithLastModificationTimeFromFile(const std::string &Path) {
+  std::vector<std::pair<uint64_t, std::string>> Files = {};
+  std::error_code EC;
+  for (auto It = fs::recursive_directory_iterator(Path, EC);
+       It != fs::recursive_directory_iterator(); It.increment(EC)) {
+    // Errors can happen if a file was removed/added during the iteration.
+    if (EC)
+      throw sycl::exception(
+          make_error_code(errc::runtime),
+          "Failed to get files with last modification time: " + Path + "\n" +
+              EC.message());
+
+    // Look at only files with access_time.txt suffix.
+    std::string FileName = It->path().string();
+    if (fs::is_regular_file(It->path()) &&
+        FileName.find("access_time.txt") != std::string::npos) {
+
+      std::ifstream FileStream{FileName};
+      uint64_t AccessTime;
+      FileStream >> AccessTime;
+      Files.push_back({AccessTime, FileName});
+    }
+  }
+  return Files;
+}
+
 void PersistentDeviceCodeCache::evictItemsFromCache(
     const std::string &CacheRoot, size_t CacheSize, size_t MaxCacheSize) {
   PersistentDeviceCodeCache::trace("Cache eviction triggered.");
@@ -252,7 +290,7 @@ void PersistentDeviceCodeCache::evictItemsFromCache(
   // exception.
   while (true) {
     try {
-      FilesWithAccessTime = getFilesWithLastModificationTime(CacheRoot, false);
+      FilesWithAccessTime = getFilesWithLastModificationTimeFromFile(CacheRoot);
       break;
     } catch (...) {
       // If the cache directory is removed during the iteration, retry.
@@ -272,16 +310,14 @@ void PersistentDeviceCodeCache::evictItemsFromCache(
   size_t CurrCacheSize = CacheSize;
   for (const auto &File : FilesWithAccessTime) {
 
-    // Remove .bin/.src/.lock extension from the file name.
-    auto ExtLoc = File.second.find_last_of(".");
-    const std::string FileNameWOExt = File.second.substr(0, ExtLoc);
-    const std::string Extension = File.second.substr(ExtLoc);
-
-    if (Extension != ".bin")
-      continue;
-
+    int pos = File.second.find("access_time.txt");
+    const std::string FileNameWOExt = File.second.substr(0, pos);
     const std::string BinFile = FileNameWOExt + ".bin";
     const std::string SrcFile = FileNameWOExt + ".src";
+
+    // Print bin and src file name.
+    PersistentDeviceCodeCache::trace("Bin file: " + BinFile);
+    PersistentDeviceCodeCache::trace("Src file: " + SrcFile);
 
     while (OSUtil::isPathPresent(BinFile) || OSUtil::isPathPresent(SrcFile)) {
 
@@ -395,6 +431,25 @@ void PersistentDeviceCodeCache::updateCacheFileSizeAndTriggerEviction(
   }
 }
 
+void saveCurrentTimeInAFile(std::string FileName) {
+
+  // Lock the file to prevent concurrent writes.
+  LockCacheItem Lock{FileName};
+  if (Lock.isOwned()) {
+    try {
+      std::ofstream FileStream{FileName, std::ios::trunc};
+      FileStream << std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count();
+      FileStream.close();
+    } catch (std::exception &e) {
+      throw sycl::exception(make_error_code(errc::runtime),
+                            "Failed to save current time in a file: " +
+                                FileName + "\n" + std::string(e.what()));
+    }
+  }
+}
+
 /* Stores built program in persistent cache. We will put the binary for each
  * device in the list to a separate file.
  */
@@ -447,6 +502,8 @@ void PersistentDeviceCodeCache::putItemToDisc(
         trace("device binary has been cached: " + FullFileName);
         writeSourceItem(FileName + ".src", Devices[DeviceIndex], SortedImgs,
                         SpecConsts, BuildOptionsString);
+
+        saveCurrentTimeInAFile(FileName + "access_time.txt");
 
         // Update Total cache size after adding the new items.
         TotalSize += getFileSize(FileName + ".src");
@@ -556,7 +613,8 @@ std::vector<std::vector<char>> PersistentDeviceCodeCache::getItemFromDisc(
 #ifdef __SYCL_INSTRUMENT_PERSISTENT_CACHE
             InstrumentCache Instrument{"Updating file access time: "};
 #endif
-            updateFileModificationTime(FileName + ".bin");
+            saveCurrentTimeInAFile(FileName + "access_time.txt");
+            // updateFileModificationTime(FileName + ".bin");
           }
 
           FileNames += FullFileName + ";";
